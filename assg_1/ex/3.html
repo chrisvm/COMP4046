@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Christian Velez - Assignment 1</title>
+    <script src="../js/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/dat.gui.js"></script>
+    <style>
+        canvas {
+            border: solid 1px black;
+        }
+        canvas, img {
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: optimize-contrast;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+    </style>
+</head>
+
+<body style="width: 1024px;margin: auto">
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <ul class="nav navbar-nav">
+            <li><a class="navbar-brand" href="../index.html">Christian Velez - Assignment 1</a></li>
+            <li id="link1"><a href="1.html">1 - Image Processing/GUI</a></li>
+            <li id="link2"><a href="2.html">2 - Colored Disks</a></li>
+            <li id="link3"><a href="3.html">3 - Chroma-key</a></li>
+        </ul>
+    </div>
+</nav>
+
+<h1>3 - Chroma-key</h1>
+<div class="panel panel-primary">
+    <div class="panel-heading">Canvas</div>
+    <div class="panel-body">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="canvas1"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="canvas2"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="canvas4"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="canvas3"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default">1</button>
+                        <button type="button" class="btn btn-default">2</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function Color(r, g, b, a) {
+        return {'r':r, 'g':g, 'b':b, 'a':a};
+    }
+
+    function Color(r, g, b) {
+        return {'r':r, 'g':g, 'b':b, 'a':255};
+    }
+
+    function setRGBAt(imgData, pos, red, green, blue) {
+        imgData.data[pos] = red;
+        imgData.data[pos + 1] = green;
+        imgData.data[pos + 2] = blue;
+        imgData.data[pos + 3] = 255;
+    }
+
+    function setColorAt(imgData, pos, color) {
+        imgData.data[pos] = color.r;
+        imgData.data[pos + 1] = color.g;
+        imgData.data[pos + 2] = color.b;
+        imgData.data[pos + 3] = 255;
+    }
+
+    function getColorAt(imgData, pos) {
+        var r = imgData.data[pos];
+        var g = imgData.data[pos + 1];
+        var b = imgData.data[pos + 2];
+        var a = imgData.data[pos + 3];
+        return Color(r, g, b, a);
+    }
+
+    function addColorAt(imgData, pos, r, g, b) {
+        imgData.data[pos] += r;
+        imgData.data[pos + 1] += g;
+        imgData.data[pos + 2] += b;
+        imgData.data[pos + 3] = 255;
+    }
+
+    function addColorAt(imgData, pos, color) {
+        imgData.data[pos] += color.r;
+        imgData.data[pos + 1] += color.g;
+        imgData.data[pos + 2] += color.b;
+        imgData.data[pos + 3] = color.a;
+    }
+
+    var image, b_image;
+    var offCanvas, backCanvas;
+
+    function setCanvasToImageSize() {
+        var ratio = image.height / image.width;
+
+        var canvases = [
+            'canvas1',
+            'canvas2',
+            'canvas3',
+            'canvas4'
+        ];
+
+        var canvas;
+        for (var x = 0; x < canvases.length; x++) {
+            canvas = $('#'+canvases[x])[0];
+            canvas.width = 400;
+            canvas.height = ratio * 400;
+        }
+
+        offCanvas = document.createElement('canvas');
+        offCanvas.width = 400;
+        offCanvas.height = ratio * 400;
+        offCanvas.getContext('2d').drawImage(image, 0, 0, 400, 400 * ratio);
+        document.body.appendChild(offCanvas);
+    }
+
+    function colorInRange(color, range) {
+        if (color.r < range.rleast || color.r > range.rmax )
+            return false;
+        else if (color.g < range.gleast || color.g > range.gmax)
+            return false;
+        else if (color.b < range.bleast || color.b > range.bmax)
+            return false;
+        return true;
+    }
+
+    var intervals = {
+        rleast: 10,
+        rmax: 86,
+        gleast: 81,
+        gmax: 200,
+        bleast: 10,
+        bmax: 97
+    };
+
+    function addGUI() {
+        var gui = new dat.GUI();
+        gui.add(intervals, 'rleast').onChange(function(){segmentation();});
+        gui.add(intervals, 'rmax').onChange(function(){segmentation();});
+        gui.add(intervals, 'gleast').onChange(function(){segmentation();});
+        gui.add(intervals, 'gmax').onChange(function(){segmentation();});
+        gui.add(intervals, 'bleast').onChange(function(){segmentation();});
+        gui.add(intervals, 'bmax').onChange(function(){segmentation();});
+    }
+
+    function segmentation() {
+        var canvas1 = $("#canvas1")[0], canvas2 = $("#canvas2")[0];
+        var canvas3 = $("#canvas3")[0], canvas4 = $("#canvas4")[0];
+        var width = canvas1.width, height = canvas1.height;
+
+        var datas = [];
+        for (var x = 0; x < 5; x++)
+            datas.push(offCanvas.getContext('2d').getImageData(0, 0, width, height));
+
+        var index, color;
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+                index = (x + (y * width)) * 4;
+                color = getColorAt(datas[0], index);
+                setRGBAt(datas[1], index, color.r, 0, 0);
+                setRGBAt(datas[2], index, 0, color.g, 0);
+                setRGBAt(datas[3], index, 0, 0, color.b);
+                if (colorInRange(color, intervals))
+                    setRGBAt(datas[4], index, 255, 255, 255);
+                else
+                    setRGBAt(datas[4], index, 0, 0, 0);
+            }
+        }
+
+        canvas1.getContext('2d').putImageData(datas[1], 0, 0);
+        canvas2.getContext('2d').putImageData(datas[2], 0, 0);
+        canvas3.getContext('2d').putImageData(datas[3], 0, 0);
+        canvas4.getContext('2d').putImageData(datas[4], 0, 0);
+    }
+
+    function getBackgroundData() {
+        var width = backCanvas.width;
+        var height = backCanvas.height;
+        return backCanvas.getContext('2d').getImageData(0, 0, width, height);
+    }
+
+    function replaceBackground() {
+        var canvas1 = $("#canvas1")[0], canvas2 = $("#canvas2")[0];
+        var canvas3 = $("#canvas3")[0], canvas4 = $("#canvas4")[0];
+        var width = canvas1.width, height = canvas1.height;
+
+        var backData = getBackgroundData();
+
+        var data = offCanvas.getContext('2d').getImageData(0, 0, width, height);
+        var index, color;
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+                index = (x + (y * width)) * 4;
+                color = getColorAt(data, index);
+                if (colorInRange(color, intervals)) {
+                    setColorAt(data, index, getColorAt(backData, index));
+                }
+            }
+        }
+        canvas1.getContext('2d').putImageData(data, 0, 0);
+    }
+
+    $(document).ready(function(){
+        image = new Image();
+        image.onload = setCanvasToImageSize;
+        image.src = 'shelley4.jpg';
+
+        b_image = new Image();
+        b_image.onload = function() {
+            var ratio = b_image.height / b_image.width;
+            backCanvas = document.createElement('canvas');
+            backCanvas.width = 400;
+            backCanvas.height = 400 * ratio;
+            backCanvas.getContext('2d').drawImage(b_image, 0, 0, 400, 400 * ratio);
+        };
+        b_image.src = 'montagne.jpg'
+        var events = [
+            segmentation,
+            replaceBackground
+        ];
+
+        $('.btn-group').children().each(function(index){
+            $(this).click(events[index]);
+        });
+
+        //addGUI();
+    });
+</script>
+</body>
+</html>

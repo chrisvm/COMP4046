@@ -1,0 +1,134 @@
+<html>
+
+<head>
+<title>HTML5 Canvas &mdash; Basic Image Processing + GUI</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF8">
+
+<style>
+    canvas {border: solid 1px black;
+    }
+    canvas, img {
+        image-rendering: optimizeSpeed;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+        -ms-interpolation-mode: nearest-neighbor;
+    }
+    td {vertical-align: top;}
+</style>
+</head>
+
+<script type="text/javascript">    
+    var image1;
+    
+    var params = {
+        'offset': +100
+    }
+    
+    function processOffset(imageData) {
+        // Do in place processing: imageData content replaced with new values
+        var data = imageData.data;
+        var width = imageData.width;
+        var height = imageData.height;    
+                
+        // iterate over all pixels, do in place computation
+        for (var x=0; x<width; x++)
+        for (var y=0; y<height; y++) {
+            var idx=4*(x+y*width);
+            
+            data[idx]   = data[idx]   + params.offset; // R
+            data[idx+1] = data[idx+1] + params.offset; // G
+            data[idx+2] = data[idx+2] + params.offset; // B
+            data[idx+3] = 255;                  // alpha
+        }
+    }
+    function processFlip(imageData1) {
+        // Function returns a new ImageData object
+        var data1 = imageData1.data;
+        var width = imageData1.width;
+        var height = imageData1.height;
+
+        var imageData2 = new ImageData(width, height);
+        var data2 = imageData2.data;
+
+        // iterate over all pixels, do in place computation
+        for (var x=0; x<width; x++)
+        for (var y=0; y<height; y++) {
+            var idx=4*(x+y*width);
+            var idx2=4*(x+(height-1-y)*width)
+            
+            data2[idx2]   = data1[idx]; // R
+            data2[idx2+1] = data1[idx+1]; // G
+            data2[idx2+2] = data1[idx+2]; // B
+            data2[idx2+3] = 255;                  // alpha
+        }
+        return imageData2;
+    }
+    
+    function drawGraphics(ctx) {
+        // Add canvas drawings
+        ctx.beginPath();
+        // Geometry
+        ctx.moveTo(20, 20);
+        ctx.lineTo(20, 60);
+        ctx.lineTo(100, 60);
+        // Style
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'blue';
+        ctx.stroke();
+        
+        ctx.font = 'bold 12pt Calibri red';
+        ctx.fillStyle = 'yellow';
+        ctx.fillText('Yellow', 100, 140);
+    }
+
+    function doProcessing() {
+        var ctx1 = document.getElementById('canvas1').getContext('2d');
+
+        // Uncomment to adapt canvas size to image
+        // ctx1.canvas.width  = image1.width;
+        // ctx1.canvas.height = image1.height;
+
+        // Draw image in canvas1
+        ctx1.drawImage(image1, 0,0, ctx1.canvas.width,ctx1.canvas.height);        
+        
+        // Get the data from context 1
+        var imageData = ctx1.getImageData(0,0,ctx1.canvas.width,ctx1.canvas.height);
+
+        processOffset(imageData); // In place computation
+        //var imageData2 = processFlip(imageData);
+        
+        var ctx2 = document.getElementById('canvas2').getContext('2d');
+        ctx2.canvas.width  = imageData.width;
+        ctx2.canvas.height = imageData.height;
+        ctx2.putImageData(imageData, 0,0);
+        drawGraphics(ctx2);
+        
+        // To display canvas larger (but same amount of content pixels)
+        //ctx1.canvas.setAttribute('style','width:600px');
+    }
+    function loadImage() {
+
+    }
+    
+    function start() {
+        image1 = new Image();
+        image1.onload = doProcessing;
+        image1.src = 'peppers.png';
+    }
+</script>
+
+<body onload="start();">
+    <h2>Basic Image Processing</h2>
+    
+    <div style="display:inline-block">
+    Image 1 <br/>
+    <canvas id="canvas1" width="150" height="150"></canvas>
+    </div>
+
+    <div style="display:inline-block">
+    Image 2 <br/>
+    <canvas id="canvas2" width="150" height="150"></canvas>
+    </div>
+</body>
+</html>   

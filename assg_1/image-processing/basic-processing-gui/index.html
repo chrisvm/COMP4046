@@ -1,0 +1,215 @@
+<html>
+
+<head>
+<title>HTML5 Canvas &mdash; Basic Image Processing + GUI</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF8">
+<script type="text/javascript" src="dat.gui.js"></script>
+
+<style>
+    canvas {border: solid 1px black;}
+    td {vertical-align: top;}
+</style>
+</head>
+
+<script type="text/javascript">
+    var canvas1, canvas2;
+    var ctx1, ctx2;
+    
+    var imageObj1 = new Image();
+    var imageObj2 = new Image();
+    
+    var params = {
+        'offset': +50
+    }
+    
+    function doProcessing() {
+        ctx1.drawImage(imageObj1, 0,0, 256,256);
+        
+        imageObj2.width  = 256;
+        imageObj2.height = 256;
+        
+        var imageData = ctx1.getImageData(0, 0, 256, 256);
+        var data = imageData.data;
+
+        // iterate over all pixels
+        var idx;
+        for (var x=0; x<imageData.width; x++)
+        for (var y=0; y<imageData.height; y++) {
+            idx=4*(x+y*imageData.width);
+            
+            data[idx]   = data[idx]   + params.offset; // R
+            data[idx+1] = data[idx+1] + params.offset; // G
+            data[idx+2] = data[idx+2] + params.offset; // B
+            data[idx+3] = 255;                  // alpha
+        }
+        
+        ctx2.putImageData(imageData, 0,0);
+    }
+    
+    var gui;
+    function initGUI() {
+        gui = new dat.GUI({ autoPlace: false });
+
+        gui.add(params, 'offset').min(-255).max(+255).onChange(doProcessing);
+
+        if (magnifierCanvas) // show only if Magnifier canvas already initialized
+            gui.add(window, 'magnifierScale').min(1).max(32).onChange(displayMagnification);
+                
+        var parent = document.getElementById('controls');      
+        parent.appendChild(gui.domElement);
+    }
+    
+    var pick1_text, pick2_text;
+    function getMousePos(canvas, event) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: Math.round(event.clientX - rect.left),
+          y: Math.round(event.clientY - rect.top)
+        };
+    }
+    function doPickColor(event) {
+        console.log("doPickColor: event = ",event);
+        
+        var mousePos = getMousePos(event.target, event);
+        
+        var imageData = ctx1.getImageData(mousePos.x, mousePos.y, 1,1);
+        var data = imageData.data;        
+        pick1_text.innerHTML = "(x="+mousePos.x+",y="+mousePos.y+"):"
+                +"RGBA=["+data[0]+","+data[1]+","+data[2]+","+data[3]+"]"
+                +" <span style='background-color:rgb("+data[0]+","+data[1]+","+data[2]+")'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+        
+        imageData = ctx2.getImageData(mousePos.x, mousePos.y, 1,1);
+        data = imageData.data;        
+        pick2_text.innerHTML = "(x="+mousePos.x+",y="+mousePos.y+"):"
+                +"RGBA=["+data[0]+","+data[1]+","+data[2]+","+data[3]+"]"
+                +" <span style='background-color:rgb("+data[0]+","+data[1]+","+data[2]+")'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+    }
+    function initPicker() {
+        canvas1.addEventListener("mousedown", doPickColor, false);
+        canvas2.addEventListener("mousedown", doPickColor, false);
+        
+        pick1_text = document.getElementById('text1');
+        pick2_text = document.getElementById('text2');
+    }
+    
+    var magnifierCanvas;
+    var magnifierCtx;
+    var magnifierSize = 11;
+    var magnifierScale = 16;
+    var magnifierImageData;
+    var magnifierImageData2;
+    function resizeNearest(imageData, scale) {
+        var imageData2 = new ImageData(imageData.width*scale, imageData.height*scale);
+        
+        var data = imageData.data;
+        var data2 = imageData2.data;
+        
+        var idx;
+        for (var x=0; x<imageData2.width; x++)
+        for (var y=0; y<imageData2.height; y++) {
+            idx2=4*(x+y*imageData2.width);
+            idx1=4*(Math.floor(x/scale)+Math.floor(y/scale)*imageData.width);
+            
+            data2[idx2]   = data[idx1];
+            data2[idx2+1] = data[idx1+1];
+            data2[idx2+2] = data[idx1+2];
+            data2[idx2+3] = data[idx1+3];
+        }
+        
+        return imageData2;
+    }
+    function displayMagnification() {
+        magnifierImageData2 = resizeNearest(magnifierImageData, magnifierScale);
+        magnifierCanvas.width  = magnifierImageData2.width;
+        magnifierCanvas.height = magnifierImageData2.height;
+        
+        magnifierCtx.putImageData(magnifierImageData2, 0,0);
+    }
+    function doMagnify(event) {
+        var canvas = event.target;
+        var ctx = canvas.getContext('2d');
+        
+        var mousePos = getMousePos(canvas, event);
+        
+        var halfsize = Math.ceil(magnifierSize/2);
+        magnifierImageData = ctx.getImageData(mousePos.x-halfsize, mousePos.y-halfsize, 2*halfsize+1,2*halfsize+1);       
+        
+        displayMagnification();
+    }
+    function doMagnify2(event) {
+        if (event.buttons)
+            doMagnify(event);
+    }
+    function initMagnifier(canvasList) {
+        // Inject canvas from showing magnification
+        magnifierCanvas = document.createElement("canvas");
+        magnifierCanvas.id = "magnifierCanvas";
+        var text = document.createTextNode("<br/>Image Magnification");
+        
+        var magnifierSpan = document.getElementById('magnifier');
+        magnifierSpan.appendChild(magnifierCanvas);
+        
+        //magnifierCanvas = document.getElementById('magnifierCanvas');
+
+        magnifierCtx = magnifierCanvas.getContext('2d');
+        magnifierImageData = new ImageData(magnifierSize, magnifierSize);
+        displayMagnification();
+        
+        for (var i=0; i<canvasList.length; i++) {
+            canvasList[i].addEventListener("mousedown", doMagnify, false);
+            canvasList[i].addEventListener("mousemove", doMagnify2, false);
+        }
+    }
+    
+    function initCanvas() {    
+        canvas1 = document.getElementById('canvas-1');
+        ctx1 = canvas1.getContext('2d');
+    
+        canvas2 = document.getElementById('canvas-2');
+        ctx2 = canvas2.getContext('2d');
+    }
+    
+    function start() {
+        initCanvas();
+        //initPicker();  // uncomment to use color picker
+        //initMagnifier([canvas1, canvas2]);  // uncomment to use image magnifier
+        //initGUI(); // uncomment to add control GUI
+            
+        imageObj1.onload = doProcessing;
+        imageObj1.src = 'peppers.png';
+    }
+</script>
+
+<body onload="start();">
+    <h2>Basic Image Processing + GUI</h2>
+    <table><tbody><tr>
+    
+    <td>
+    <table><tbody>
+    <tr>
+    <td><canvas id="canvas-1" width="256" height="256"></canvas></td>
+    <td><canvas id="canvas-2" width="256" height="256"></canvas></td>
+    </tr>
+    <tr>
+    <td>Input image</td>
+    <td>Output image</td>
+    </tr>
+    <tr>
+    <td><small><span id="text1"></span></small></td>
+    <td><small><span id="text2"></span></small></td>
+    </tr>
+    </tbody></table>
+    </td>
+    
+    <td>
+    <span id="controls"></span>
+    <br/><br/>
+    <span id="magnifier"></span>
+    </td>
+    
+    </tr></tbody></table>
+    <input type="button" onclick="initPicker(); document.body.removeChild(this);" value="Add Picker"/>
+    <input type="button" onclick="initMagnifier([canvas1,canvas2]); document.body.removeChild(this);" value="Add Magnifier"/>
+    <input type="button" onclick="initGUI(); document.body.removeChild(this);" value="Add GUI"/>
+</body>
+</html>   

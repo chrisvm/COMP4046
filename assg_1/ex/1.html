@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Christian Velez - Assignment 1</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+
+    <style>
+        canvas {
+            border: solid 1px black;
+        }
+        canvas, img {
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: optimize-contrast;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+    </style>
+</head>
+
+<body style="width: 1024px;margin: auto">
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <ul class="nav navbar-nav">
+                <li><a class="navbar-brand" href="../index.html">Christian Velez - Assignment 1</a></li>
+                <li id="link1"><a href="1.html">1 - Image Processing/GUI</a></li>
+                <li id="link2"><a href="2.html">2 - Colored Disks</a></li>
+                <li id="link3"><a href="3.html">3 - Chroma-key</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <h1>1 - Image Processing/GUI</h1>
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">Canvas</div>
+        <div class="panel-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="well">
+                            <canvas id="canvas1"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="well">
+                            <canvas id="canvas2"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default">1</button>
+                            <button type="button" class="btn btn-default">2</button>
+                            <button type="button" class="btn btn-default">3</button>
+                            <button type="button" class="btn btn-default">4</button>
+                            <button type="button" class="btn btn-default">5</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script>
+        var image;
+
+        function getCanvas() {
+            // get the canvases
+            var canvas1 = $("#canvas1");
+            var canvas2 = $("#canvas2");
+            return {'canvas1': canvas1[0], 'canvas2': canvas2[0]};
+        }
+
+        function setCanvasToImageSize() {
+            // get both canvases
+            var canvases = getCanvas();
+
+            // get image ratio
+            var ratio = image.height/image.width;
+
+            // set to image size
+            canvases.canvas1.width = 400;
+            canvases.canvas1.height = 400 * ratio;
+
+            canvases.canvas2.width = 400;
+            canvases.canvas2.height = 400 * ratio;
+
+            canvases.canvas1.getContext('2d').drawImage(image, 0, 0, 400, 400 * ratio);
+        }
+
+        function setColorAt(imgData, pos, red, green, blue) {
+            imgData.data[pos] = red;
+            imgData.data[pos + 1] = green;
+            imgData.data[pos + 2] = blue;
+        }
+
+        function getColorAt(imgData, pos) {
+            var r = imgData.data[pos];
+            var g = imgData.data[pos + 1];
+            var b = imgData.data[pos + 2];
+            return {'r': r, 'g': g, 'b': b};
+        }
+
+        function question1() {
+            var context1 = getCanvas().canvas1.getContext('2d');
+            var context2 = getCanvas().canvas2.getContext('2d');
+            var width = context1.canvas.width, height = context1.canvas.height;
+
+            // get imagedata
+            var dataIn = context1.getImageData(0, 0, width, height);
+
+            // process
+            var index, color;
+            for (var x = 0; x < dataIn.width; x++) {
+                for (var y = 0; y < dataIn.height; y++) {
+                    index = (x + (y * width)) * 4;
+                    color = getColorAt(dataIn, index);
+                    setColorAt(dataIn, index, color.r, 0, 0);
+                }
+            }
+
+            // set image to second canvas
+            context2.putImageData(dataIn, 0, 0);
+        }
+
+        function question2() {
+            var context1 = getCanvas().canvas1.getContext('2d');
+            var context2 = getCanvas().canvas2.getContext('2d');
+            var width = context1.canvas.width, height = context1.canvas.height;
+
+            // get imagedata
+            var dataIn = context1.getImageData(0, 0, width, height);
+
+            // process
+            var color, index, black;
+            for (var x = 0; x < dataIn.width; x++) {
+                for (var y = 0; y < dataIn.height; y++) {
+                    index = (x + (y * width)) * 4;
+                    color = getColorAt(dataIn, index);
+                    black = (color.r + color.g + color.b) / 3;
+                    if (black >= 120) {
+                        black = 255;
+                    } else {
+                        black = 0;
+                    }
+                    setColorAt(dataIn, index, black, black, black);
+                }
+            }
+
+            // set image to second canvas
+            context2.putImageData(dataIn, 0, 0);
+        }
+
+        function question3() {
+            var context1 = getCanvas().canvas1.getContext('2d');
+            var context2 = getCanvas().canvas2.getContext('2d');
+            var width = context1.canvas.width, height = context1.canvas.height;
+
+            // get imagedata
+            var dataIn = context1.getImageData(0, 0, width, height);
+
+            // process
+            var color, index, black;
+            for (var x = 0; x < dataIn.width; x++) {
+                for (var y = 0; y < dataIn.height; y++) {
+                    index = (x + (y * width)) * 4;
+                    color = getColorAt(dataIn, index);
+                    color.r = ((color.r - 128) * 1.2) + 158;
+                    color.g = ((color.g - 128) * 1.2) + 158;
+                    color.b = ((color.b - 128) * 1.2) + 158;
+                    setColorAt(dataIn, index, color.r, color.g, color.b);
+                }
+            }
+
+            // set image to second canvas
+            context2.putImageData(dataIn, 0, 0);
+        }
+
+        function question4() {
+
+        }
+
+        function question5() {
+
+        }
+
+        $(document).ready(function() {
+            // create the image
+            image = new Image();
+            image.src = 'peppers.png';
+            image.onload = setCanvasToImageSize;
+
+            // set click events
+            var events = [question1, question2, question3, question4, question5];
+            $('.btn-group').children().each(function(index){
+                $(this).click(events[index]);
+            });
+        });
+    </script>
+
+</body>
+</html>
