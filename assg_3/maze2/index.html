@@ -22,6 +22,7 @@
         <script type="text/javascript" src="js/animate-utils.js"></script>
         <script type="text/javascript" src="js/materials-utils.js"></script>
         <script type="text/javascript" src="js/gui-utils.js"></script>
+        <script type="text/javascript" src="js/pcg-utils.js"></script>
 
         <style>
             canvas {border: solid 1px black;}
@@ -32,33 +33,9 @@
             THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
 
             // maze data structure
-            maze = {
-                "w": 5,
-                "h":4,
-                "floor": [
-                    1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1
-                ],
-                "yzwall": [
-                    2, 0, 0, 0, 0, 2,
-                    2, 2, 0, 0, 2, 2,
-                    2, 0, 0, 2, 2, 2,
-                    2, 0, 0, 2, 0, 2
-                ],
-                "xzwall": [
-                    2, 2, 2, 2, 2,
-                    0, 2, 2, 0, 0,
-                    0, 0, 2, 0, 2,
-                    0, 2, 2, 0, 0,
-                    2, 2, 2, 2, 2
-                ],
-                "goal": {
-                    "x": 4,
-                    "y": 3
-                }
-            };
+            var pcgMaze = generateMaze();
+            console.log(JSON.stringify(pcgMaze));
+            maze = staticMaze();
 
             /* Hero position */
             var posx = 0.5, posy = 0.5, az = 0;
