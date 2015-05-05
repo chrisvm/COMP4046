@@ -1,0 +1,144 @@
+<html>
+
+    <head>
+        <title>Maze project</title>
+        <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+        <!-- <script type="text/javascript" src="js/three.js"></script> -->
+        <script type="text/javascript" src="js/three.min.js"></script>
+
+        <script type="text/javascript" src="js/loaders/DDSLoader.js"></script>
+        <script type="text/javascript" src="js/loaders/MTLLoader.js"></script>
+        <script type="text/javascript" src="js/loaders/OBJMTLLoader.js"></script>
+        <script type="text/javascript" src="js/loaders/OBJLoader.js"></script>
+
+        <script type="text/javascript" src="js/libs/dat.gui.min.js"></script>
+
+        <script type="text/javascript" src="js/maze-utils.js"></script>
+        <script type="text/javascript" src="js/input-utils.js"></script>
+        <script type="text/javascript" src="js/camera-utils.js"></script>
+        <script type="text/javascript" src="js/scene-renderer-utils.js"></script>
+        <script type="text/javascript" src="js/Hero.js"></script>
+        <script type="text/javascript" src="js/animate-utils.js"></script>
+        <script type="text/javascript" src="js/materials-utils.js"></script>
+        <script type="text/javascript" src="js/gui-utils.js"></script>
+
+        <style>
+            canvas {border: solid 1px black;}
+        </style>
+
+        <script type="text/javascript">
+
+            // maze data structure
+            maze = {
+                "w": 5,
+                "h":4,
+                "floor": [
+                    1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1
+                ],
+                "yzwall": [
+                    2, 0, 0, 0, 0, 2,
+                    2, 2, 0, 0, 2, 2,
+                    2, 0, 0, 2, 2, 2,
+                    2, 0, 0, 2, 0, 2
+                ],
+                "xzwall": [
+                    2, 2, 2, 2, 2,
+                    0, 2, 2, 0, 0,
+                    0, 0, 2, 0, 2,
+                    0, 2, 2, 0, 0,
+                    2, 2, 2, 2, 2
+                ],
+                "goal": {
+                    "x": 4,
+                    "y": 3
+                }
+            };
+
+            /* Hero position */
+            var posx = 0, posy = 0, az = 0;
+
+            /* Hero motion */
+            var dx = 0, dy = 0, daz = 0;
+
+
+            // Global variables for the View
+            var floorMesh, wallMesh;
+            var input;
+
+            function webGLStart() {
+
+                /* Initialize WebGL renderer and create scene */
+                initRendererAndScene();
+
+                /* Create cameras */
+                initCameras(scene);
+
+                /* Create Controllers */
+                input = new KeyboardMouseInput(canvas);
+
+                /* Load textures and create materials */
+                initMaterials();
+
+                /* Create maze mesh */
+                var floor = createFloorMesh(maze);
+                scene.add(floor);
+
+                var walls = createWallMesh(maze);
+                scene.add(walls);
+
+                // Helper to see the walls from cameras[2] top view
+                //wire = new THREE.WireframeHelper( wallMesh, 0x0000ff );
+                //wire.material.linewidth = 3
+                //scene.add( wire );
+
+
+                /* Create hero mesh */
+                hero = new Hero(scene);
+
+                // TODO: replace box and sphere hero with mesh loaded from JSON file
+
+
+
+
+
+                /* Orb of victory */
+                // TODO: Create orb
+
+
+                /* Create lights */
+
+                var light = new THREE.AmbientLight( 0x808080 ); // soft white light
+                scene.add( light );
+
+                var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+                directionalLight.position.set( 2,2, 5 );
+                scene.add( directionalLight );
+
+                // TODO: Create SpotLight
+
+
+                initGUI();
+
+                // Start rendering loop
+                tick();
+            }
+        </script>
+    </head>
+
+
+    <body onload="webGLStart();">
+
+        <canvas id="canvas" width="512" height="512"></canvas>
+        <br/>
+        <div id="messagebox">---</div>
+        <div>Memo:<br>cameras[0] controls: IJKL for elevation/azimuth, UO for distance to target
+        <br>Hero/cameras[1] controls: arrow keys
+        <br>cameras[2] controls: none
+        <br>Switch between cameras using 'V'</div>
+    </body>
+
+</html>

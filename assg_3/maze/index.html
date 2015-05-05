@@ -28,6 +28,7 @@
         'el0': 30.0,
         'd0' : 8.0
     }
+
     var gui;
     function initGUI() {
         gui = new dat.GUI({ autoPlace: true })
@@ -54,6 +55,7 @@
         canvas.onkeydown = handleKeyDown;
         canvas.onkeyup = handleKeyUp;
     }
+
     function handleKeyDown(event) {
         var keyCode = event.keyCode;
         currentlyPressedKeys[keyCode] = true;
@@ -77,6 +79,7 @@
             // Check victory
         }
     }
+
     function handleKeyUp(event) {
         currentlyPressedKeys[event.keyCode] = false;
     }
