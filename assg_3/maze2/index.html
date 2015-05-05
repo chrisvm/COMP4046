@@ -28,6 +28,8 @@
         </style>
 
         <script type="text/javascript">
+            // set dds loader
+            THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
 
             // maze data structure
             maze = {
@@ -97,13 +99,8 @@
 
 
                 /* Create hero mesh */
-                hero = new Hero(scene);
-
-                // TODO: replace box and sphere hero with mesh loaded from JSON file
-
-
-
-
+                hero = new Hero(scene, 'obj/male02/Male02_dds.js');
+                //hero = new Hero(scene);
 
                 /* Orb of victory */
                 // TODO: Create orb

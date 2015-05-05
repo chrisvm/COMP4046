@@ -2,6 +2,8 @@
 var hero;
 
 function Hero () {
+    this.loaded = false;
+
     if (arguments.length < 0) { return; }
 
     /* Create hero mesh */
@@ -21,21 +23,33 @@ function Hero () {
 
         // create the material
         this.material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
-        this.mesh = new THREE.Mesh( this.geometry, this.material );
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+        this.addMesh();
+    }
+}
+
+Hero.prototype.load_file = function (filename) {
+    var loader = new THREE.JSONLoader();
+
+    var _hero = this;
+    loader.load(filename, function (geometry, material) {
+        _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
+        var scaling = new THREE.Matrix4().scale
+        _hero.addMesh();
+    });
+};
+
+Hero.prototype.addMesh = function () {
+    if (arguments.length > 0) {
+        var transform = this.arguments[0];
+        this.mesh.applyMatrix(transform);
     }
 
     // add to the scene
-    scene.add(this.mesh);
+    this.scene.add(this.mesh);
 
     // set pointers to mesh properties
     this.position = this.mesh.position;
     this.rotation = this.mesh.rotation;
-}
-
-Hero.prototype.load_file = function (filename) {
-    THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
-    this.loader = new THREE.JSONLoader();
-    this.loader.load('obj/male02/Male02_dds.js', function (geometry, material) {
-        this.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-    });
 };
