@@ -34,7 +34,7 @@ KeyboardMouseInput.prototype.initKeyboard = function (canvas) {
 
         if (keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40) {
             // Arrow keys: prevent default handling (i.e. avoid scrolling)
-            event.preventDefault();
+            event.defaultPrevented();
             // Arrows are handled using polling in handleKeys
         } else if (event.key == 'v') {
             // Change current camera

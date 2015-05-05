@@ -23,8 +23,10 @@ function animate() {
     posy += dy * elapsed * 1 / 0.4;
     az += daz * elapsed * 360 / 2;     // Turn 360 deg in 2s
 
-    hero.position.set(posx,posy, 0);
-    hero.rotation.set(0, 0, degToRad(az), "ZXY");
+    if (hero.position && hero.rotation) {
+        hero.position.set(posx, posy, 0);
+        hero.rotation.set(0, 0, degToRad(az), "ZXY");
+    }
 
     /* Cameras update */
     var az0 = params.az0, el0 = params.el0, d0 = params.d0

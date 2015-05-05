@@ -35,16 +35,13 @@ Hero.prototype.load_file = function (filename) {
     var _hero = this;
     loader.load(filename, function (geometry, material) {
         _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
-        var scaling = new THREE.Matrix4().scale
+        var scale = 0.006;
+        _hero.mesh.scale.set(scale, scale, scale);
         _hero.addMesh();
     });
 };
 
 Hero.prototype.addMesh = function () {
-    if (arguments.length > 0) {
-        var transform = this.arguments[0];
-        this.mesh.applyMatrix(transform);
-    }
 
     // add to the scene
     this.scene.add(this.mesh);

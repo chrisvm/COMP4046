@@ -90,13 +90,7 @@
                 scene.add(floor);
 
                 var walls = createWallMesh(maze);
-                scene.add(walls);
-
-                // Helper to see the walls from cameras[2] top view
-                //wire = new THREE.WireframeHelper( wallMesh, 0x0000ff );
-                //wire.material.linewidth = 3
-                //scene.add( wire );
-
+                //scene.add(walls);
 
                 /* Create hero mesh */
                 hero = new Hero(scene, 'obj/male02/Male02_dds.js');
