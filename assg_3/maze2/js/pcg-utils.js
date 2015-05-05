@@ -60,9 +60,9 @@ var Graph = function() {
 
     // Does edge from source to sink exist?
     this.edgeExists = function(source, sink) {
-        if(this.edges[source] !== undefined)
-            for(var i=0;i<this.edges[source].length;i++)
-                if(this.edges[source][i].sink == sink)
+        if (this.edges[source] !== undefined)
+            for(var i = 0; i < this.edges[source].length; i++)
+                if (this.edges[source][i].sink == sink)
                     return this.edges[source][i];
         return null;
     };
@@ -126,10 +126,44 @@ function generateMaze() {
         }
     }
 
-    var result = Prim(g);
-    return result;
+    var result = Prim(g)
+    var ret = {};
+    ret.w = width;
+    ret.h = height;
+    ret.floor = [];
+    for (var x = 0; x < width * height; x++) {
+        floor[x] = 1;
+    }
+
+    // xz walls
+    for (var index = ((width + 1) * height) - 1; index >= 0; index--) {
+        x = index % (width + 1);
+        y = ~~(index / (width + 1));
+        if ((x % width == 0) || ((x + 1) % width == 0)) {
+            ret.xzwall = 2;
+            continue;
+        }
+        var ran_index = randomIntFromInterval(0, g.edges[new THREE.Vector2(x, y)].length);
+
+    }
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+
+
+        }
+    }
 }
 
 function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+THREE.Vector2.prototype.toString = function () {
+    var ret = '{"x": ' + this.x + ', "y": ' + this.y + '}';
+    return ret;
+};
+
+THREE.Vector3.prototype.toString = function () {
+    var ret = '{"x": ' + this.x + ', "y": ' + this.y + ', "z": ' + this.z + '}';
+    return ret;
+};
