@@ -34,9 +34,17 @@ Hero.prototype.load_file = function (filename) {
 
     var _hero = this;
     loader.load(filename, function (geometry, material) {
-        _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
         var scale = 0.006;
-        _hero.mesh.scale.set(scale, scale, scale);
+        var transform = new THREE.Matrix4().makeRotationFromEuler(
+            new THREE.Euler(degToRad(90), 0, degToRad(180), "ZXY")
+        );
+        transform.scale(new THREE.Vector3(scale, scale, scale));
+        geometry.applyMatrix(transform);
+        
+        _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
+        //_hero.mesh.rotation.set(degToRad(90), 0, degToRad(180), "ZXY");
+        //_hero.mesh.scale.set(scale, scale, scale);
+
         _hero.addMesh();
     });
 };
