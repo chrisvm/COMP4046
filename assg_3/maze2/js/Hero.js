@@ -40,11 +40,8 @@ Hero.prototype.load_file = function (filename) {
         );
         transform.scale(new THREE.Vector3(scale, scale, scale));
         geometry.applyMatrix(transform);
-        
-        _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
-        //_hero.mesh.rotation.set(degToRad(90), 0, degToRad(180), "ZXY");
-        //_hero.mesh.scale.set(scale, scale, scale);
 
+        _hero.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(material));
         _hero.addMesh();
     });
 };
@@ -57,4 +54,5 @@ Hero.prototype.addMesh = function () {
     // set pointers to mesh properties
     this.position = this.mesh.position;
     this.rotation = this.mesh.rotation;
+    this.position.set(2.0, 2.0, 0);
 };

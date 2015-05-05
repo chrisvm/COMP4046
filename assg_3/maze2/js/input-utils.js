@@ -34,13 +34,13 @@ KeyboardMouseInput.prototype.initKeyboard = function (canvas) {
 
         if (keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40) {
             // Arrow keys: prevent default handling (i.e. avoid scrolling)
-            event.defaultPrevented();
+            event.preventDefault();
             // Arrows are handled using polling in handleKeys
         } else if (event.key == 'v') {
             // Change current camera
-            cameraId = (cameraId+1)%3;
+            cameraId = (cameraId + 1) % 3;
             camera = cameras[cameraId];
-            console.log('cameraId = '+cameraId.toString()+", camera = ",cameras[cameraId]);
+            console.log('cameraId = ' + cameraId.toString() + ", camera = ", cameras[cameraId]);
 
             //var messagebox = document.getElementById("messagebox");
             messagebox.innerHTML = 'Camera ' + cameraId;
@@ -48,6 +48,14 @@ KeyboardMouseInput.prototype.initKeyboard = function (canvas) {
 
         if (event.key == 'c') {
             // Check victory
+            var pos = new THREE.Vector3(posx, posy, 0.5);
+            pos.subVectors(orbPos, pos);
+            if (pos.length() < 0.3) {
+                // win game
+                orbPos.set(0.5, 0.5, 0.5);
+                orb.position.copy(orbPos);
+                pointlight.position.copy(orbPos);
+            }
         }
     };
 

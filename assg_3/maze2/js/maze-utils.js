@@ -1,3 +1,6 @@
+var emissive_color;
+var orbPos;
+
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
@@ -196,4 +199,18 @@ function createWallGeometry (maze) {
 
 function createWallMesh(maze) {
     return new THREE.Mesh(createWallGeometry(maze), multimaterials);
+}
+
+function createOrbMesh(maze) {
+    emissive_color = 0x00aa00;
+    var geometry = new THREE.SphereGeometry(0.2, 32, 32);
+    var material = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        emissive: emissive_color
+    });
+
+    var ret = new THREE.Mesh(geometry, material);
+    orbPos = new THREE.Vector3(maze.goal.x + 0.5, maze.goal.y + 0.5, 0.5);
+    ret.position.copy(orbPos);
+    return ret;
 }

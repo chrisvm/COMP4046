@@ -61,7 +61,7 @@
             };
 
             /* Hero position */
-            var posx = 0, posy = 0, az = 0;
+            var posx = 0.5, posy = 0.5, az = 0;
 
             /* Hero motion */
             var dx = 0, dy = 0, daz = 0;
@@ -69,7 +69,7 @@
 
             // Global variables for the View
             var floorMesh, wallMesh;
-            var input;
+            var input, spotlight, pointlight;
 
             function webGLStart() {
 
@@ -86,31 +86,35 @@
                 initMaterials();
 
                 /* Create maze mesh */
-                var floor = createFloorMesh(maze);
-                scene.add(floor);
+                floorMesh = createFloorMesh(maze);
+                scene.add(floorMesh);
 
-                var walls = createWallMesh(maze);
-                //scene.add(walls);
+                wallMesh = createWallMesh(maze);
+                scene.add(wallMesh);
 
                 /* Create hero mesh */
                 hero = new Hero(scene, 'obj/male02/Male02_dds.js');
-                //hero = new Hero(scene);
 
                 /* Orb of victory */
-                // TODO: Create orb
-
+                orb = createOrbMesh(maze);
+                scene.add(orb);
 
                 /* Create lights */
-
-                var light = new THREE.AmbientLight( 0x808080 ); // soft white light
+                var light = new THREE.AmbientLight( 0x404040 ); // soft white light
                 scene.add( light );
 
                 var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-                directionalLight.position.set( 2,2, 5 );
+                directionalLight.position.set(2, 2, 5);
                 scene.add( directionalLight );
 
-                // TODO: Create SpotLight
+                // orb pointlight
+                pointlight = new THREE.PointLight(emissive_color, 1, 1.5);
+                pointlight.position.copy(orbPos);
+                scene.add(pointlight);
 
+                // create spotlight
+                spotlight = new THREE.SpotLight( 0xFFFFFF, 2.0, 3.0, Math.PI/180*30 );
+                scene.add(spotlight);
 
                 initGUI();
 
@@ -123,7 +127,7 @@
 
     <body onload="webGLStart();">
 
-        <canvas id="canvas" width="512" height="512"></canvas>
+        <canvas id="canvas" width="800" height="600"></canvas>
         <br/>
         <div id="messagebox">---</div>
         <div>Memo:<br>cameras[0] controls: IJKL for elevation/azimuth, UO for distance to target

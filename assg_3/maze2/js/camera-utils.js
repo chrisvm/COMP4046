@@ -3,6 +3,7 @@ var camera;
 
 // all the created cameras
 var cameras;
+var cameraId;
 
 // all the created cameraHelpers and axis helpers
 var cameraHelpers;
@@ -21,7 +22,7 @@ function initCameras(scene) {
     cameras[2] = new THREE.OrthographicCamera( -1, W+1, W+1, -1, -10, 10);
 
     // Define current camera
-    var cameraId = 0;
+    cameraId = 1;
     camera = cameras[cameraId];
 
     initHelpers();
